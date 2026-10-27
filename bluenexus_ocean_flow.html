@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>BlueNexus — 3D Ocean Data Comparison</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{color-scheme:dark;--bg:#061a2b;--card:rgba(12,48,72,.78);--ink:#e8f6fb;--mut:#8fb7c9;--aqua:#3de0d0;--line:rgba(120,200,225,.25);--ok:#3ddc97;--warn:#ffc857;--bad:#ff6b6b;--obs:#ff9f6b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}body{margin:0;color:var(--ink);font-family:system-ui,"Segoe UI",Arial,sans-serif;background:linear-gradient(180deg,#0a4a6e 0,#073656 140px,#061a2b 460px,#030d18 100%);min-height:100vh;line-height:1.45}
+header{position:relative;height:130px;overflow:hidden}header canvas{position:absolute;inset:0;width:100%;height:100%}
+.hd{position:relative;max-width:1080px;margin:0 auto;padding:18px 16px}.hd h1{margin:0;font-size:25px}.hd p{margin:4px 0 0;color:#bfe6f3;font-size:13px}
+.w{max-width:1080px;margin:0 auto;padding:0 16px 24px}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}.st{flex:1;min-width:130px;padding:9px 10px;border-radius:10px;background:var(--card);border:1px solid var(--line);font-size:13px;cursor:pointer;color:var(--mut)}
+.st.on{background:linear-gradient(90deg,#0aa6a6,#1b7fc4);color:#fff;border-color:transparent;font-weight:600}.st.done{color:var(--aqua)}
+.cap{background:rgba(0,0,0,.35);border:1px solid var(--line);border-left:4px solid var(--aqua);border-radius:10px;padding:12px 14px;font-size:15px;min-height:64px}
+.bar{height:4px;background:var(--line);border-radius:3px;margin:8px 0 10px}.bar i{display:block;height:100%;width:0;background:var(--aqua);border-radius:3px;transition:width .4s}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+button,label.b{background:linear-gradient(90deg,#0aa6a6,#1b7fc4);color:#fff;border:0;border-radius:9px;padding:9px 15px;font-size:14px;cursor:pointer}button.g,label.b{background:var(--card);border:1px solid var(--line);color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}.card h3{margin:0 0 8px;font-size:14px;color:var(--aqua);font-weight:600}
+#three{position:relative;border-radius:10px;overflow:hidden;background:radial-gradient(circle at 50% 20%,#0f5f86,#041a2c);touch-action:none;cursor:grab}#three canvas{display:block}
+.hint{position:absolute;left:10px;bottom:8px;font-size:11px;color:#bfe6f3;background:rgba(0,0,0,.35);padding:3px 8px;border-radius:8px;pointer-events:none}
+.cbar{position:absolute;right:10px;top:10px;font-size:11px;background:rgba(0,0,0,.4);padding:6px 8px;border-radius:8px;pointer-events:none}.cbar i{display:block;width:120px;height:8px;border-radius:4px;background:linear-gradient(90deg,hsl(223,90%,55%),hsl(150,90%,55%),hsl(60,90%,55%),hsl(0,90%,55%));margin:3px 0}
+.cbar div{display:flex;justify-content:space-between}
+.grid{display:grid;grid-template-columns:1.1fr 1fr;gap:12px}@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.m{display:flex;gap:10px;flex-wrap:wrap}.m div{flex:1;min-width:120px;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:10px;padding:8px 10px}.m b{font-size:22px;display:block;color:var(--aqua)}.m span{font-size:12px;color:var(--mut)}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:12.5px}th,td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}th{color:var(--mut);font-weight:600}
+.tag{padding:2px 8px;border-radius:10px;font-size:11.5px;font-weight:600}.ok{background:rgba(61,220,151,.18);color:var(--ok)}.warn{background:rgba(255,200,87,.18);color:var(--warn)}.bad{background:rgba(255,107,107,.18);color:var(--bad)}
+svg{width:100%;height:auto;display:block}svg text{fill:var(--ink);font-size:11px}.dim{fill:var(--mut)!important}
+.lg{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:6px}.lg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}
+.note{font-size:12px;color:var(--mut)}.view{display:none}.view.on{display:block}
+.opt{border:2px solid var(--aqua);border-radius:12px;padding:12px;background:rgba(61,224,208,.08);margin-bottom:10px}.opt span{display:block;font-size:12px;color:var(--mut)}
+.tog{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}.tog button{background:var(--card);border:1px solid var(--line)}.tog button.sel{background:linear-gradient(90deg,#0aa6a6,#1b7fc4);border-color:transparent}.nav{display:flex;gap:8px;flex-wrap:wrap}
+</style></head><body>
+<header><canvas id="cv"></canvas><div class="hd"><h1>🌊 BlueNexus — Connecting Ocean Data</h1><p>I02 Comparison Workflow Toolkit · SIH26067 · Team Nova Sync · KGISL School of Innovation · synthetic sample data</p></div></header>
+<div class="w">
+<div class="steps" id="steps"></div><div class="cap" id="cap"></div><div class="bar"><i id="pb"></i></div>
+<div class="ctl"><button id="play">▶ Auto-play tour</button><button class="g" id="prev">◀ Back</button><button class="g" id="next">Next ▶</button></div>
+<span id="dt" hidden></span>
+<div class="view" id="v0"><div class="card"><h3>1 · Select datasets</h3>
+<div class="opt">🌡️ <b>Sample ocean temperature (selected)</b><span>Synthetic model + observation CSVs · 3 stations · 0–100 m depth · includes °F, missing and unmatched cases</span></div>
+<div class="ctl"><label class="b">Or upload model CSV<input type="file" id="fm" accept=".csv" hidden></label><label class="b">Upload observation CSV<input type="file" id="fo" accept=".csv" hidden></label><button class="g" id="rst">Use sample again</button></div>
+<div class="m" id="met0"></div><p class="note">CSV columns: id,lat,lon,depth_m,time,value,unit (C or F). Files stay in your browser.</p></div>
+<div class="card"><h3>Loaded datasets</h3><div id="data0"></div></div>
+<div class="nav"><button onclick="go(1)">Align &amp; check data ▶</button></div></div>
+<div class="view" id="v1"><div class="card"><h3>2 · Align &amp; check</h3><p class="note">Linking by location (±0.05°), depth (±2 m) and time (±3 h); all units converted to °C.</p><div class="m" id="met1"></div></div>
+<div class="card"><h3>Aligned records</h3><div id="data1"></div></div>
+<div class="nav"><button class="g" onclick="go(0)">◀ Datasets</button><button onclick="go(2)">🧊 Visualize in 3D ▶</button></div></div>
+<div class="view" id="v2"><div class="card"><h3>3 · Visualize — choose a view</h3>
+<div class="tog"><button id="b2d" onclick="setM('2d')">📊 2D comparison chart</button><button id="b3d" onclick="setM('3d')">🧊 3D ocean view</button></div>
+<div id="p2d"><div id="cmp2"></div></div>
+<div id="p3d"><div id="three"><div class="hint">● model &nbsp; ◼ observation · drag to rotate, scroll to zoom</div><div class="cbar"><div><span>21°C</span><span>30°C</span></div><i></i></div></div>
+<div class="lg"><span><i style="background:var(--ok)"></i>valid link</span><span><i style="background:var(--warn)"></i>unit converted</span><span><i style="background:var(--bad)"></i>flagged / unmatched</span></div></div></div>
+<div class="nav"><button class="g" onclick="go(1)">◀ Align</button><button onclick="go(3)">Compare results ▶</button></div></div>
+<div class="view" id="v3"><div class="card"><h3>4 · Compare results</h3><div class="m" id="met3"></div></div>
+<div class="grid"><div class="card"><h3>📋 Comparison table</h3><div id="data3"></div></div><div class="card"><h3>📊 Model vs observation (°C)</h3><div id="cmp3"></div></div></div>
+<div class="nav"><button class="g" onclick="go(2)">◀ Visualize</button><button onclick="go(0)">↺ Start over</button></div></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const SM=`id,lat,lon,depth_m,time,value,unit
+M1,13.08,80.27,0,2026-10-01T00:00,28.4,C
+M2,13.08,80.27,10,2026-10-01T00:00,27.9,C
+M3,13.08,80.27,50,2026-10-01T00:00,25.1,C
+M4,13.08,80.27,100,2026-10-01T00:00,21.3,C
+M5,13.10,80.30,0,2026-10-01T06:00,28.8,C
+M6,13.10,80.30,10,2026-10-01T06:00,28.1,C
+M7,13.10,80.30,50,2026-10-01T06:00,25.4,C
+M8,12.95,80.25,0,2026-10-01T12:00,29.0,C
+M9,12.95,80.25,25,2026-10-01T12:00,27.2,C
+M10,12.95,80.25,75,2026-10-01T12:00,23.0,C`;
+const SO=`id,lat,lon,depth_m,time,value,unit
+O1,13.08,80.27,0,2026-10-01T00:30,28.9,C
+O2,13.08,80.27,10,2026-10-01T00:00,27.5,C
+O3,13.08,80.27,50,2026-10-01T01:00,25.6,C
+O4,13.08,80.27,100,2026-10-01T00:00,70.7,F
+O5,13.10,80.30,0,2026-10-01T06:00,28.8,C
+O6,13.10,80.30,10,2026-10-01T06:00,,C
+O7,13.10,80.30,50,2026-10-01T06:15,25.0,C
+O8,12.95,80.25,0,2026-10-01T12:00,29.4,C
+O9,12.95,80.25,25,2026-10-01T12:00,26.9,C
+O10,12.95,80.25,75,2026-10-02T12:00,22.6,C
+O11,11.50,79.90,0,2026-10-01T00:00,29.9,C`;
+const $=i=>document.getElementById(i);
+const parse=t=>{const L=t.trim().split(/\r?\n/),h=L.shift().split(',').map(s=>s.trim());return L.map(l=>{const c=l.split(','),o={};h.forEach((k,i)=>o[k]=(c[i]||'').trim());o.lat=+o.lat;o.lon=+o.lon;o.depth_m=+o.depth_m;o.t=new Date(o.time).getTime();o.v=o.value===''?null:+o.value;o.unit=(o.unit||'C').toUpperCase();return o})};
+let M=parse(SM),O=parse(SO),R,step=0,timer,playing=false,ST=[];
+const toC=r=>r.v==null?null:r.unit==='F'?(r.v-32)*5/9:r.v;
+const SC={ok:'#3ddc97',converted:'#ffc857',missing:'#ff6b6b',unmatched:'#ff6b6b'};
+function run(){const used=new Set();R=M.map(m=>{let b=null,bd=1e18;O.forEach((o,i)=>{if(used.has(i))return;if(Math.abs(o.lat-m.lat)<=.05&&Math.abs(o.lon-m.lon)<=.05&&Math.abs(o.depth_m-m.depth_m)<=2&&Math.abs(o.t-m.t)<=3*36e5){const d=Math.abs(o.t-m.t)+Math.abs(o.depth_m-m.depth_m)*1e5;if(d<bd){bd=d;b=i}}});
+const base={m,key:m.lat+','+m.lon,mc:toC(m)};if(b==null)return{...base,o:null,s:'unmatched',msg:'No observation within tolerance'};used.add(b);const o=O[b];
+if(o.v==null||m.v==null)return{...base,o,s:'missing',msg:'Missing value — excluded'};const cv2=o.unit!==m.unit,oc=toC(o);
+return{...base,o,s:cv2?'converted':'ok',oc,d:oc-base.mc,msg:cv2?`${o.v}°${o.unit} → ${oc.toFixed(1)}°C`:'Matched'}});
+R.stray=O.filter((_,i)=>!used.has(i));const ks=[...new Set(R.map(r=>r.key))];ST=ks.map((k,i)=>({k,n:String.fromCharCode(65+i),lat:+k.split(',')[0],lon:+k.split(',')[1]}))}
+const stn=r=>(ST.find(t=>t.k===r.key)||{n:'?'}).n;
+const tag=s=>({ok:'<span class="tag ok">Matched</span>',converted:'<span class="tag warn">Unit converted</span>',missing:'<span class="tag bad">Missing</span>',unmatched:'<span class="tag bad">Unmatched</span>'}[s]);
+const CAP=["Step 1 · Select datasets — Choose the model and observation datasets (sample data or your own CSVs), review them, then continue.","Step 2 · Align & check — Records are linked by location, depth and time; units are normalised to °C and problems are flagged.","Step 3 · Visualize — Pick a 2D comparison chart or the 3D ocean view of the aligned data.","Step 4 · Compare results — Only reliable pairs are compared: differences, bias, MAE and RMSE."];
+const NM=["1 Select datasets","2 Align & check","3 Visualize","4 Compare"];
+/* ---------- 3D ---------- */
+const P=(lat,lon,d)=>new THREE.Vector3((lon-80.275)*60,-d/100*4,(13.025-lat)*40);
+let sc3,cam,ren,grp,surf,theta=.8,phi=1.15,rad=12.5,drag=false,lx=0,ly=0,idle=0;
+const tcol=t=>new THREE.Color().setHSL(.62-.62*Math.max(0,Math.min(1,(t-21)/9)),.9,.55);
+function sprite(txt,col,sz){const c=document.createElement('canvas');c.width=256;c.height=96;const g=c.getContext('2d');g.font='bold 44px system-ui';g.textAlign='center';g.fillStyle=col||'#fff';g.shadowColor='#000';g.shadowBlur=6;g.fillText(txt,128,60);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.scale.set(sz||1.6,(sz||1.6)*.375,1);return s}
+function cyl(a,b,col,r,op){const d=new THREE.Vector3().subVectors(b,a),m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),6),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op||1}));m.position.copy(a).add(b).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());return m}
+function init3(){const el=$('three');if(!window.THREE){el.insertAdjacentHTML('afterbegin','<p class="note" style="padding:20px">3D library could not load (check internet). Data and comparison below still work.</p>');return}
+sc3=new THREE.Scene();cam=new THREE.PerspectiveCamera(45,1.6,.1,100);ren=new THREE.WebGLRenderer({antialias:true,alpha:true});ren.setPixelRatio(Math.min(devicePixelRatio,2));el.appendChild(ren.domElement);
+sc3.add(new THREE.AmbientLight(0xffffff,.7));const dl=new THREE.DirectionalLight(0xffffff,.8);dl.position.set(5,10,6);sc3.add(dl);
+[0x35c4e6,0x1e95c4,0x136a9c,0x0a3f6e].forEach((c,i)=>{const b=new THREE.Mesh(new THREE.BoxGeometry(8,1,8),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.2,depthWrite:false}));b.position.y=-.5-i;sc3.add(b)});
+const eg=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(8,4,8)),new THREE.LineBasicMaterial({color:0x9fe8ff,transparent:true,opacity:.5}));eg.position.y=-2;sc3.add(eg);
+const fl=new THREE.Mesh(new THREE.PlaneGeometry(8,8,16,16),new THREE.MeshPhongMaterial({color:0x8a7650,flatShading:true}));fl.rotation.x=-Math.PI/2;fl.position.y=-4.02;const fp=fl.geometry.attributes.position;for(let i=0;i<fp.count;i++)fp.setZ(i,Math.sin(i*1.7)*.07+Math.cos(i*.9)*.05);fl.geometry.computeVertexNormals();sc3.add(fl);
+const gh=new THREE.GridHelper(8,8,0x9fe8ff,0x9fe8ff);gh.material.transparent=true;gh.material.opacity=.15;gh.position.y=-4;sc3.add(gh);
+surf=new THREE.Mesh(new THREE.PlaneGeometry(8,8,36,36),new THREE.MeshPhongMaterial({color:0x4fd6ee,transparent:true,opacity:.45,flatShading:true,side:THREE.DoubleSide,shininess:90}));surf.rotation.x=-Math.PI/2;sc3.add(surf);
+[0,25,50,75,100].forEach(d=>{const s=sprite(d+' m','#bfe6f3',1.3);s.position.set(4.9,-d/100*4,4.2);sc3.add(s)});
+const ax=sprite('depth ▼','#8fb7c9',1.4);ax.position.set(4.9,.6,4.2);sc3.add(ax);
+grp=new THREE.Group();sc3.add(grp);
+const cvs=ren.domElement;cvs.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX;ly=e.clientY;cvs.setPointerCapture(e.pointerId)});
+cvs.addEventListener('pointermove',e=>{if(!drag)return;theta-=(e.clientX-lx)*.008;phi=Math.max(.35,Math.min(1.5,phi-(e.clientY-ly)*.006));lx=e.clientX;ly=e.clientY;idle=0});
+cvs.addEventListener('pointerup',()=>drag=false);cvs.addEventListener('wheel',e=>{e.preventDefault();rad=Math.max(7,Math.min(18,rad+e.deltaY*.01))},{passive:false});
+rs();addEventListener('resize',rs);(function loop(t){requestAnimationFrame(loop);const p=surf.geometry.attributes.position;for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i);p.setZ(i,Math.sin(x*1.3+t/600)*.07+Math.cos(y*1.6+t/800)*.06)}p.needsUpdate=true;surf.geometry.computeVertexNormals();if(!drag){idle++;theta+=.0025}
+cam.position.set(rad*Math.sin(phi)*Math.sin(theta),-2+rad*Math.cos(phi),rad*Math.sin(phi)*Math.cos(theta));cam.lookAt(0,-1.9,0);ren.render(sc3,cam)})(0)}
+function rs(){if(!ren)return;const w=$('three').clientWidth;if(!w)return;const h=w<600?330:430;ren.setSize(w,h);cam.aspect=w/h;cam.updateProjectionMatrix()}
+function build3(){if(!grp)return;while(grp.children.length)grp.remove(grp.children[0]);
+ST.forEach(t=>{const a=P(t.lat,t.lon,0),b=P(t.lat,t.lon,100);grp.add(cyl(a,b,0xffffff,.025,.45));const s=sprite('Stn '+t.n,'#3de0d0',1.5);s.position.set(a.x,.55,a.z);grp.add(s)});
+const off=new THREE.Vector3(.3,0,0);
+R.forEach(r=>{const mp=P(r.m.lat,r.m.lon,r.m.depth_m);const sp=new THREE.Mesh(new THREE.SphereGeometry(.16,20,16),new THREE.MeshPhongMaterial({color:tcol(r.mc),shininess:90}));sp.position.copy(mp);grp.add(sp);
+if(r.o){const op=P(r.o.lat,r.o.lon,r.o.depth_m).add(off),val=step>=1&&r.oc!=null?r.oc:(r.o.unit==='F'||r.o.v==null?null:r.o.v);
+const cu=new THREE.Mesh(new THREE.BoxGeometry(.24,.24,.24),new THREE.MeshPhongMaterial({color:val==null?0xff9f6b:tcol(val),shininess:60}));cu.position.copy(op);grp.add(cu);
+const e=new THREE.Mesh(new THREE.EdgesGeometry(new THREE.BoxGeometry(.28,.28,.28)),new THREE.LineBasicMaterial({color:step>=2?SC[r.s]:0xff9f6b}));const ed=new THREE.LineSegments(e.geometry,e.material);ed.position.copy(op);grp.add(ed);
+if(step>=1)grp.add(cyl(mp,op,step>=2?SC[r.s]:0xffffff,.035,.9));
+if(step>=3&&r.d!=null){const s=sprite((r.d>=0?'+':'')+r.d.toFixed(1),'#ffc857',1.1);s.position.set(op.x+.55,op.y+.2,op.z);grp.add(s)}}
+if(step>=2&&(r.s==='unmatched'||r.s==='missing')){const rg=new THREE.Mesh(new THREE.TorusGeometry(.32,.03,8,28),new THREE.MeshBasicMaterial({color:0xff6b6b}));rg.position.copy(mp);rg.rotation.x=Math.PI/2;grp.add(rg)}});
+R.stray.forEach(o=>{let p=P(o.lat,o.lon,o.depth_m).add(off);const q=p.clone();p.x=Math.max(-3.8,Math.min(3.8,p.x));p.z=Math.max(-3.8,Math.min(3.8,p.z));const far=!p.equals(q);
+const w=new THREE.Mesh(new THREE.BoxGeometry(.26,.26,.26),new THREE.MeshBasicMaterial({color:0xff6b6b,wireframe:true}));w.position.copy(p);grp.add(w);if(step>=2){const s=sprite(far?'obs outside area':'obs: time mismatch','#ff6b6b',1.9);s.position.set(p.x,p.y+.45,p.z);grp.add(s)}})}
+/* ---------- panels ---------- */
+function metrics(){const ok=R.filter(r=>r.d!=null),n=ok.length;
+if(step<3)return`<div><b>${M.length}</b><span>model records</span></div><div><b>${O.length}</b><span>observation records</span></div><div><b>${ST.length}</b><span>stations</span></div>`+(step>=2?`<div><b>${R.filter(r=>r.s==='ok').length}</b><span>valid</span></div><div><b>${R.filter(r=>r.s==='converted').length}</b><span>unit converted</span></div><div><b>${R.filter(r=>r.s==='missing'||r.s==='unmatched').length}</b><span>flagged</span></div>`:`<div><b>${O.filter(o=>o.unit!==M[0].unit).length}</b><span>different unit</span></div>`);
+const bias=ok.reduce((a,r)=>a+r.d,0)/(n||1),mae=ok.reduce((a,r)=>a+Math.abs(r.d),0)/(n||1),rm=Math.sqrt(ok.reduce((a,r)=>a+r.d*r.d,0)/(n||1));
+return`<div><b>${n}/${R.length}</b><span>records compared</span></div><div><b>${bias.toFixed(2)}°C</b><span>mean bias (obs − model)</span></div><div><b>${mae.toFixed(2)}°C</b><span>MAE</span></div><div><b>${rm.toFixed(2)}°C</b><span>RMSE</span></div><div><b>${R.length-n}</b><span>excluded</span></div>`}
+const T=(h,rows)=>`<div class="tw"><table><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>`;
+function data(){if(step===0){return`<b style="font-size:12px;color:var(--aqua)">Model</b>`+T(['ID','Lat','Lon','Depth','Time','Value'],M.map(m=>[m.id,m.lat,m.lon,m.depth_m+' m',m.time.slice(5),m.v==null?'—':m.v+'°'+m.unit]))+`<b style="font-size:12px;color:var(--obs);display:block;margin-top:10px">Observations</b>`+T(['ID','Lat','Lon','Depth','Time','Value'],O.map(o=>[o.id,o.lat,o.lon,o.depth_m+' m',o.time.slice(5),o.v==null?'<span class="tag bad">missing</span>':o.v+'°'+o.unit]))}
+
+return T(['Model','Obs','Stn','Depth','Model °C','Obs raw','Obs °C','Δ °C','Status'],R.map(r=>[r.m.id,r.o?r.o.id:'—',stn(r),r.m.depth_m+' m',r.mc.toFixed(1),r.o&&r.o.v!=null?r.o.v+'°'+r.o.unit:'—',r.oc!=null?r.oc.toFixed(1):'—',r.d!=null&&step>=3?(r.d>=0?'+':'')+r.d.toFixed(2):'·',step>=2?tag(r.s):'…']))}
+function cmp(){const W=520,rh=26,H=44+R.length*rh,x=v=>110+(v-20)/11*(W-150);let s=`<svg viewBox="0 0 ${W} ${H}">`;
+[20,22,24,26,28,30].forEach(v=>s+=`<line x1="${x(v)}" x2="${x(v)}" y1="22" y2="${H-14}" stroke="#fff" opacity=".12"/><text x="${x(v)-8}" y="${H-2}" class="dim">${v}°</text>`);
+R.forEach((r,i)=>{const y=34+i*rh;s+=`<text x="4" y="${y+4}" class="dim">${r.m.id} · Stn ${stn(r)} · ${r.m.depth_m}m</text>`;
+const raw=r.o&&r.o.v!=null?(step===0?(r.o.unit==='F'?null:r.o.v):r.oc):undefined;
+if(raw!==undefined&&raw!=null){s+=`<line x1="${x(r.mc)}" x2="${x(raw)}" y1="${y}" y2="${y}" stroke="${step>=2?SC[r.s]:'#fff'}" stroke-width="3" opacity=".85"/><circle cx="${x(raw)}" cy="${y}" r="6" fill="#ff9f6b" stroke="#fff"/>`;if(step>=3)s+=`<text x="${x(Math.max(raw,r.mc))+10}" y="${y+4}" style="fill:#ffc857!important">${r.d>=0?'+':''}${r.d.toFixed(2)}</text>`}
+else if(raw===null)s+=`<text x="${W-120}" y="${y+4}" style="fill:#ff6b6b!important">${r.o.v}°F · off scale</text>`;
+else if(step>=2)s+=`<text x="${x(r.mc)+12}" y="${y+4}" style="fill:#ff6b6b!important">✖ ${r.s==='unmatched'?'unmatched':'missing'}</text>`;
+s+=`<circle cx="${x(r.mc)}" cy="${y}" r="6" fill="#3de0d0" stroke="#fff"/>`});
+return s+`</svg><div class="lg"><span><i style="background:#3de0d0"></i>model</span><span><i style="background:#ff9f6b"></i>observation</span><span>line = difference</span></div>`}
+let vmode='3d',inited=false;
+function setM(m){stop();vmode=m;render()}
+function render(){$('steps').innerHTML=NM.map((n,i)=>`<div class="st ${i==step?'on':i<step?'done':''}" onclick="go(${i})">${n}</div>`).join('');$('cap').textContent=CAP[step];$('pb').style.width=(step+1)*25+'%';
+['v0','v1','v2','v3'].forEach((v,i)=>$(v).classList.toggle('on',i===step));
+if(step===0){$('met0').innerHTML=metrics();$('data0').innerHTML=data()}
+if(step===1){$('met1').innerHTML=metrics();$('data1').innerHTML=data()}
+if(step===2){$('b2d').classList.toggle('sel',vmode==='2d');$('b3d').classList.toggle('sel',vmode==='3d');$('p2d').style.display=vmode==='2d'?'block':'none';$('p3d').style.display=vmode==='3d'?'block':'none';
+if(vmode==='2d')$('cmp2').innerHTML=cmp();else{if(!inited){inited=true;try{init3()}catch(e){console.error(e)}}rs();build3()}}
+if(step===3){$('met3').innerHTML=metrics();$('data3').innerHTML=data();$('cmp3').innerHTML=cmp()}}
+function go(i){step=Math.max(0,Math.min(3,i));render();scrollTo({top:0,behavior:'smooth'})}
+function stop(){clearInterval(timer);playing=false;$('play').textContent='▶ Play demo'}
+$('play').onclick=()=>{if(playing){stop();return}playing=true;$('play').textContent='⏸ Pause';if(step==3)go(0);timer=setInterval(()=>{if(step>=3){stop();return}if(step===1)vmode='3d';go(step+1)},5500)};
+$('next').onclick=()=>{stop();go(step+1)};$('prev').onclick=()=>{stop();go(step-1)};
+const rd=(f,cb)=>{const r=new FileReader();r.onload=()=>{try{cb(parse(r.result));run();stop();go(0)}catch(e){alert('Could not read CSV — check column names.')}};r.readAsText(f)};
+$('fm').onchange=e=>e.target.files[0]&&rd(e.target.files[0],d=>M=d);$('fo').onchange=e=>e.target.files[0]&&rd(e.target.files[0],d=>O=d);
+$('rst').onclick=()=>{M=parse(SM);O=parse(SO);run();stop();go(0)};
+const cvs0=$('cv'),cx=cvs0.getContext('2d');let tt=0;(function wave(){const w=cvs0.width=cvs0.clientWidth,h=cvs0.height=cvs0.clientHeight;cx.clearRect(0,0,w,h);[['#0b6a93',.55,0],['#0e88aa',.4,2],['#3de0d0',.25,4]].forEach(([c,a,p],i)=>{cx.beginPath();cx.moveTo(0,h);for(let x=0;x<=w;x+=6)cx.lineTo(x,h-26-i*11+Math.sin(x/70+tt*(1+i*.3)+p)*9);cx.lineTo(w,h);cx.fillStyle=c;cx.globalAlpha=a;cx.fill()});cx.globalAlpha=1;tt+=.03;requestAnimationFrame(wave)})();
+run();render();
+</script></body></html>
